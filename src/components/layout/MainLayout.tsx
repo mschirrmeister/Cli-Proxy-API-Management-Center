@@ -31,6 +31,7 @@ import {
   IconSidebarStore,
   IconSidebarSystem,
   IconChevronDown,
+  IconNetwork,
 } from '@/components/ui/icons';
 import { INLINE_LOGO_JPEG } from '@/assets/logoInline';
 import {
@@ -67,6 +68,7 @@ const sidebarIcons: Record<string, ReactNode> = {
   pluginStore: <IconSidebarStore size={18} />,
   config: <IconSidebarConfig size={18} />,
   logs: <IconSidebarLogs size={18} />,
+  connections: <IconNetwork size={18} />,
   system: <IconSidebarSystem size={18} />,
 };
 
@@ -661,6 +663,12 @@ export function MainLayout() {
           labelKey: 'nav.logs',
           metaKey: 'nav_meta.logs',
           icon: sidebarIcons.logs,
+        },
+        {
+          path: '/connections',
+          labelKey: 'nav.connections',
+          metaKey: 'nav_meta.connections',
+          icon: sidebarIcons.connections,
         },
       ],
     },
