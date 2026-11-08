@@ -39,10 +39,13 @@ export interface UpstreamRequest {
   connId: number;
   provider: string;
   authId: string;
+  /** Model the client asked for; empty when the caller did not provide it. */
+  model: string;
   method: string;
   host: string;
   path: string;
   status: number;
+  contentType: string;
   stream: boolean;
   reused: boolean;
   wasIdle: boolean;
@@ -50,9 +53,25 @@ export interface UpstreamRequest {
   startedAt: number;
   firstByteMs: number;
   endedAt: number | null;
-  complete: boolean;
+  /** How the response ended (see RequestEnd); empty while in flight. */
+  end: string;
   error: string;
 }
+
+/**
+ * How an upstream response ended, as recorded by the proxy.
+ * after_final_event is normal for streams: the proxy stops reading once the
+ * final event ([DONE], message_stop, response.completed) has arrived.
+ */
+export type RequestEnd =
+  | 'eof'
+  | 'after_final_event'
+  | 'closed_early'
+  | 'cancelled'
+  | 'read_error'
+  | 'error'
+  | 'no_body'
+  | 'sent';
 
 export interface ConnectionEvent {
   time: number;
@@ -134,10 +153,12 @@ const normalizeRequest = (raw: unknown): UpstreamRequest | null => {
     connId: num(raw.conn_id),
     provider: str(raw.provider),
     authId: str(raw.auth_id),
+    model: str(raw.model),
     method: str(raw.method),
     host: str(raw.host),
     path: str(raw.path),
     status: num(raw.status),
+    contentType: str(raw.content_type),
     stream: bool(raw.stream),
     reused: bool(raw.reused),
     wasIdle: bool(raw.was_idle),
@@ -145,7 +166,7 @@ const normalizeRequest = (raw: unknown): UpstreamRequest | null => {
     startedAt: time(raw.started_at),
     firstByteMs: num(raw.first_byte_ms),
     endedAt: optionalTime(raw.ended_at),
-    complete: bool(raw.complete),
+    end: str(raw.end),
     error: str(raw.error),
   };
 };

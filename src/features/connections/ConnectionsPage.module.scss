@@ -336,8 +336,7 @@
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 2px;
-  margin-left: -1px;
+  width: 1px;
   background: var(--text-primary);
   opacity: 0.75;
   pointer-events: none;
@@ -405,4 +404,362 @@
 
 .live {
   color: var(--viz-success);
+}
+
+/* ---------- tabs ---------- */
+
+/* Quiet underline tabs, same vocabulary as the config and provider pages. */
+.tabs {
+  display: flex;
+  gap: 2px;
+  border-bottom: 1px solid var(--border-color);
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  padding: 8px 12px 11px;
+  border-radius: 8px 8px 0 0;
+  font-size: 13px;
+  font-weight: 550;
+  color: var(--text-secondary);
+  white-space: nowrap;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    bottom: -1px;
+    height: 2px;
+    border-radius: 999px;
+    background: transparent;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: -2px;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tab:hover {
+    color: var(--text-primary);
+    background: color-mix(in srgb, var(--bg-tertiary) 55%, transparent);
+  }
+}
+
+.tabActive {
+  color: var(--text-primary);
+  font-weight: 650;
+
+  &::after {
+    background: var(--text-primary);
+  }
+}
+
+.tabCount {
+  font-family: $font-mono;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+}
+
+.tabPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+
+/* ---------- pager ---------- */
+
+.pager {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pagerButton {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  &:hover:not(:disabled) {
+    border-color: var(--border-hover);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 1px;
+  }
+}
+
+.pagerPos {
+  font-family: $font-mono;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.pagerFrozen {
+  font-size: 12px;
+  color: var(--amber-text, var(--text-secondary));
+}
+
+/* ---------- requests ---------- */
+
+.cardMeta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filterChipActive {
+  border: 1px solid var(--text-primary);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-family: $font-mono;
+  font-size: 12px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 600;
+
+  &:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 1px;
+  }
+}
+
+.filterChip {
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-family: $font-mono;
+  font-size: 12px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--border-hover);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 1px;
+  }
+}
+
+.connLink {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--primary-color);
+  font-family: $font-mono;
+  font-size: 12px;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 1px;
+  }
+}
+
+/* Long tables scroll inside their card; the header row stays visible. */
+.scrollWrap {
+  max-height: 640px;
+  overflow-y: auto;
+
+  thead th {
+    position: sticky;
+    top: 0;
+    background: var(--bg-primary);
+  }
+}
+
+.failed {
+  color: var(--viz-failure) !important;
+  font-weight: 600;
+}
+
+/* ---------- time to first byte ---------- */
+
+/* Two series hues: amber for requests that opened their connection (on this
+ * page amber already means "cost a reconnect"), blue for reused connections.
+ * The fastest-to-slowest line stays neutral. Validated (lightness band,
+ * chroma, colorblind separation, contrast) against every card surface:
+ * light #f0eee8 and white #ffffff with #c96c05 / #2a78d6, dark #1d1b18 with
+ * #d97706 / #3987e5. */
+.page {
+  --ttfb-new: #c96c05;
+  --ttfb-reused: #2a78d6;
+}
+
+:global([data-theme='dark']) .page {
+  --ttfb-new: #d97706;
+  --ttfb-reused: #3987e5;
+}
+
+.ttfbLegend {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 12px;
+  color: var(--text-secondary);
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+}
+
+.legendNew,
+.legendReused {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.legendNew {
+  background: var(--ttfb-new);
+}
+
+.legendReused {
+  background: var(--ttfb-reused);
+}
+
+.legendRange {
+  display: inline-block;
+  width: 16px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--text-tertiary);
+}
+
+.ttfbHint {
+  margin: -6px 0 10px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.ttfbWrap {
+  position: relative;
+  width: 100%;
+  overflow-x: auto;
+}
+
+.ttfbSvg {
+  display: block;
+  overflow: visible;
+}
+
+.ttfbGrid {
+  stroke: var(--border-color);
+  stroke-width: 1;
+}
+
+.ttfbAxis,
+.ttfbLane,
+.ttfbNone,
+.ttfbCount {
+  fill: var(--text-tertiary);
+  font-size: 11px;
+  font-family: $font-mono;
+}
+
+.ttfbProvider {
+  fill: var(--text-primary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.ttfbModel {
+  fill: var(--text-secondary);
+  font-size: 11px;
+  font-family: $font-mono;
+}
+
+.ttfbDelta {
+  fill: var(--text-secondary);
+  font-size: 11px;
+}
+
+.ttfbRange {
+  stroke: var(--text-tertiary);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.ttfbPin {
+  fill: var(--text-tertiary);
+}
+
+.ttfbNew,
+.ttfbReused {
+  stroke: var(--bg-primary);
+  stroke-width: 2;
+}
+
+.ttfbNew {
+  fill: var(--ttfb-new);
+}
+
+.ttfbReused {
+  fill: var(--ttfb-reused);
+}
+
+.ttfbHit {
+  fill: transparent;
+}
+
+.ttfbValue {
+  fill: var(--text-primary);
+  font-size: 12px;
+  font-family: $font-mono;
+  font-variant-numeric: tabular-nums;
+}
+
+.ttfbTip {
+  position: absolute;
+  pointer-events: none;
+  z-index: 2;
+  padding: 6px 9px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  box-shadow: var(--shadow);
+  font-size: 12px;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
