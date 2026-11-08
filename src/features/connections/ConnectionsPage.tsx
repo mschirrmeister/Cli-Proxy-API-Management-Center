@@ -711,6 +711,7 @@ function RequestTable({
                   : req.stream
                     ? t('connections.stream_sse')
                     : '–'}
+                {req.encoding && <div className={styles.sub}>{req.encoding}</div>}
               </td>
               <td>
                 <ConnLink id={req.connId} onSelect={onSelectConn} />

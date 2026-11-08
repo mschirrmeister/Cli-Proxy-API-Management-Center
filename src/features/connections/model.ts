@@ -68,6 +68,7 @@ export const endTone = (end: RequestEnd | string): CloseTone => {
     case 'error':
       return 'bad';
     // closed_early, cancelled: cut short without an upstream failure.
+    // closed_unchecked: a compressed stream closed early; completeness unknown.
     default:
       return 'notice';
   }

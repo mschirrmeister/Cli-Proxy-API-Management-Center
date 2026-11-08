@@ -61,6 +61,8 @@ export interface UpstreamRequest {
   endedAt: number | null;
   /** How the response ended (see RequestEnd); empty while in flight. */
   end: string;
+  /** Response Content-Encoding as the proxy read it; empty when plain. */
+  encoding: string;
   error: string;
 }
 
@@ -73,6 +75,7 @@ export type RequestEnd =
   | 'eof'
   | 'after_final_event'
   | 'closed_early'
+  | 'closed_unchecked'
   | 'cancelled'
   | 'read_error'
   | 'error'
@@ -175,6 +178,7 @@ const normalizeRequest = (raw: unknown): UpstreamRequest | null => {
     firstByteMs: num(raw.first_byte_ms),
     endedAt: optionalTime(raw.ended_at),
     end: str(raw.end),
+    encoding: str(raw.encoding),
     error: str(raw.error),
   };
 };

@@ -205,6 +205,7 @@ describe('connections model', () => {
     expect(endTone('after_final_event')).toBe('ok');
     expect(endTone('sent')).toBe('ok');
     expect(endTone('closed_early')).toBe('notice');
+    expect(endTone('closed_unchecked')).toBe('notice');
     expect(endTone('cancelled')).toBe('notice');
     expect(endTone('read_error')).toBe('bad');
     expect(endTone('error')).toBe('bad');
