@@ -388,6 +388,9 @@ export function ConnectionsPage() {
                         }}
                         title={[
                           `#${row.conn.id} ${kindLabel(row.conn.kind)} → ${row.conn.addr}`,
+                          row.conn.proxy
+                            ? t('connections.proxy_via', { proxy: row.conn.proxy })
+                            : null,
                           `${formatClock(row.conn.openedAt)} – ${
                             row.conn.closedAt
                               ? formatClock(row.conn.closedAt)
@@ -773,6 +776,7 @@ function ConnTable({
             <th>{t('connections.col_provider')}</th>
             <th>{t('connections.col_kind')}</th>
             <th>{t('connections.col_target')}</th>
+            <th>{t('connections.col_proxy')}</th>
             <th>{t('connections.col_tls')}</th>
             <th className={styles.num}>{t('connections.col_requests')}</th>
             <th className={styles.num}>{t('connections.col_bytes')}</th>
@@ -800,6 +804,20 @@ function ConnTable({
                 <td className={styles.mono}>
                   <div>{c.addr}</div>
                   <div className={styles.sub}>{c.local}</div>
+                </td>
+                <td className={styles.mono}>
+                  {c.proxy ? (
+                    <>
+                      <div>{c.proxy}</div>
+                      {c.proxyMs > 0 && (
+                        <div className={styles.sub} title={t('connections.proxy_tunnel_hint')}>
+                          {t('connections.proxy_tunnel', { value: formatDuration(c.proxyMs) })}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <span className={styles.sub}>{t('connections.proxy_direct')}</span>
+                  )}
                 </td>
                 <td className={styles.mono}>
                   <div>{[c.proto, c.tlsVersion].filter(Boolean).join(' · ') || '–'}</div>

@@ -12,14 +12,20 @@ export interface UpstreamConnection {
   kind: string;
   provider: string;
   authId: string;
+  /** Upstream target (host:port), also for proxied connections. */
   addr: string;
+  /** Proxy (host:port) the connection is tunneled through; empty when direct. */
+  proxy: string;
   local: string;
   remote: string;
   proto: string;
   tlsVersion: string;
   alpn: string;
   tlsResumed: boolean;
+  /** Time until the target was reached, including the proxy tunnel. */
   dialMs: number;
+  /** Part of dialMs spent on the proxy tunnel, when measured separately (0 otherwise). */
+  proxyMs: number;
   tlsMs: number;
   openedAt: number;
   closedAt: number | null;
@@ -122,6 +128,7 @@ const normalizeConnection = (raw: unknown): UpstreamConnection | null => {
     provider: str(raw.provider),
     authId: str(raw.auth_id),
     addr: str(raw.addr),
+    proxy: str(raw.proxy),
     local: str(raw.local),
     remote: str(raw.remote),
     proto: str(raw.proto),
@@ -129,6 +136,7 @@ const normalizeConnection = (raw: unknown): UpstreamConnection | null => {
     alpn: str(raw.alpn),
     tlsResumed: bool(raw.tls_resumed),
     dialMs: num(raw.dial_ms),
+    proxyMs: num(raw.proxy_ms),
     tlsMs: num(raw.tls_ms),
     openedAt: time(raw.opened_at),
     closedAt: optionalTime(raw.closed_at),
