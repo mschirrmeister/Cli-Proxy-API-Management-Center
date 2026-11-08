@@ -8,6 +8,7 @@
  */
 
 import {
+  Fragment,
   useCallback,
   useEffect,
   useMemo,
@@ -358,6 +359,11 @@ export function ConnectionsPage() {
             <div className={styles.cardHeader}>
               <h2>{t('connections.timeline')}</h2>
               <span className={styles.muted}>
+                {timeline.length < view.connections.length &&
+                  `${t('connections.timeline_truncated', {
+                    shown: timeline.length,
+                    total: view.connections.length,
+                  })} · `}
                 {formatClock(view.windowStart)} – {formatClock(view.now)}
               </span>
             </div>
@@ -646,6 +652,24 @@ function Kpi({ label, value, hint }: { label: string; value: string; hint: strin
 }
 
 /** Connection number that filters the request list to that connection. */
+/**
+ * Lets a host, address or login label wrap after dots, colons and @ (and, as
+ * browsers do anyway, after hyphens) instead of in the middle of a word.
+ */
+function Breakable({ text }: { text: string }) {
+  const parts = text.split(/(?<=[.:@])/);
+  return (
+    <>
+      {parts.map((part, i) => (
+        <Fragment key={i}>
+          {i > 0 && <wbr />}
+          {part}
+        </Fragment>
+      ))}
+    </>
+  );
+}
+
 function ConnLink({ id, onSelect }: { id: number; onSelect: (id: number) => void }) {
   const { t } = useTranslation();
   if (!id) return <span className={styles.muted}>–</span>;
@@ -768,6 +792,8 @@ function ConnTable({
   if (rows.length === 0) {
     return <div className={styles.muted}>{t('connections.empty')}</div>;
   }
+  // Most setups use no proxy; the column only appears when a listed connection does.
+  const showProxy = rows.some((c) => c.proxy);
   return (
     <div className={`${styles.tableWrap} ${styles.scrollWrap}`}>
       <table className={styles.table}>
@@ -775,13 +801,11 @@ function ConnTable({
           <tr>
             <th>#</th>
             <th>{t('connections.col_provider')}</th>
-            <th>{t('connections.col_kind')}</th>
             <th>{t('connections.col_target')}</th>
-            <th>{t('connections.col_proxy')}</th>
+            {showProxy && <th>{t('connections.col_proxy')}</th>}
             <th>{t('connections.col_tls')}</th>
             <th className={styles.num}>{t('connections.col_requests')}</th>
             <th className={styles.num}>{t('connections.col_bytes')}</th>
-            <th className={styles.num}>{t('connections.col_age')}</th>
             <th className={styles.num}>
               {showReason ? t('connections.col_closed') : t('connections.col_idle')}
             </th>
@@ -798,30 +822,45 @@ function ConnTable({
                   <ConnLink id={c.id} onSelect={onSelectConn} />
                 </td>
                 <td>
-                  <div>{c.provider || t('connections.provider_other')}</div>
-                  {c.authId && <div className={styles.sub}>{shortAuthLabel(c.authId)}</div>}
-                </td>
-                <td>{kindLabel(c.kind)}</td>
-                <td className={styles.mono}>
-                  <div>{c.addr}</div>
-                  <div className={styles.sub}>{c.local}</div>
-                </td>
-                <td className={styles.mono}>
-                  {c.proxy ? (
-                    <>
-                      <div>{c.proxy}</div>
-                      {c.proxyMs > 0 && (
-                        <div className={styles.sub} title={t('connections.proxy_tunnel_hint')}>
-                          {t('connections.proxy_tunnel', { value: formatDuration(c.proxyMs) })}
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <span className={styles.sub}>{t('connections.proxy_direct')}</span>
+                  <div>
+                    <Breakable text={c.provider || t('connections.provider_other')} />
+                  </div>
+                  {c.authId && (
+                    <div className={styles.sub}>
+                      <Breakable text={shortAuthLabel(c.authId)} />
+                    </div>
                   )}
                 </td>
+                {/* The local address is the same host for every row; it stays on hover. */}
+                <td
+                  className={styles.mono}
+                  title={c.local ? `${c.local} → ${c.remote}` : undefined}
+                >
+                  <Breakable text={c.addr} />
+                </td>
+                {showProxy && (
+                  <td className={styles.mono}>
+                    {c.proxy ? (
+                      <>
+                        <div>
+                          <Breakable text={c.proxy} />
+                        </div>
+                        {c.proxyMs > 0 && (
+                          <div className={styles.sub} title={t('connections.proxy_tunnel_hint')}>
+                            {t('connections.proxy_tunnel', { value: formatDuration(c.proxyMs) })}
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <span className={styles.sub}>{t('connections.proxy_direct')}</span>
+                    )}
+                  </td>
+                )}
                 <td className={styles.mono}>
-                  <div>{[c.proto, c.tlsVersion].filter(Boolean).join(' · ') || '–'}</div>
+                  <div className={styles.nowrap}>
+                    {[c.proto, c.tlsVersion].filter(Boolean).join(' · ') || '–'}
+                  </div>
+                  <div className={`${styles.sub} ${styles.nowrap}`}>{kindLabel(c.kind)}</div>
                   <div className={styles.sub}>
                     {t('connections.handshake', {
                       dial: formatDuration(c.dialMs),
@@ -838,18 +877,22 @@ function ConnTable({
                   <div>{formatBytes(c.bytesIn)} ↓</div>
                   <div className={styles.sub}>{formatBytes(c.bytesOut)} ↑</div>
                 </td>
-                <td className={styles.num}>{formatDuration(end - c.openedAt)}</td>
                 <td className={styles.num}>
-                  {showReason
-                    ? formatClock(c.closedAt ?? 0)
-                    : c.inFlight > 0
-                      ? t('connections.state_active')
-                      : formatDuration(now - idleSince)}
+                  <div>
+                    {showReason
+                      ? formatClock(c.closedAt ?? 0)
+                      : c.inFlight > 0
+                        ? t('connections.state_active')
+                        : formatDuration(now - idleSince)}
+                  </div>
+                  <div className={`${styles.sub} ${styles.nowrap}`}>
+                    {t('connections.lifetime_value', { value: formatDuration(end - c.openedAt) })}
+                  </div>
                 </td>
                 {showReason && (
                   <td>
                     <span
-                      className={`${styles.chip} ${styles[`tone_${closeTone(c.closeReason)}`]}`}
+                      className={`${styles.chip} ${styles.nowrap} ${styles[`tone_${closeTone(c.closeReason)}`]}`}
                       title={c.closeError || undefined}
                     >
                       {reasonLabel(c.closeReason)}

@@ -23,7 +23,7 @@ export const ALL_PROVIDERS = 'all';
 /** Connections without a credential label (panel download, version checks, ...). */
 export const OTHER_PROVIDER = 'other';
 
-export const MAX_TIMELINE_ROWS = 60;
+export const MAX_TIMELINE_ROWS = 200;
 
 export type CloseTone = 'ok' | 'notice' | 'bad' | 'open';
 
@@ -180,7 +180,10 @@ export interface TimelineRow {
   tone: CloseTone;
 }
 
-/** One bar per connection; request starts become ticks on the bar. */
+/**
+ * One bar per connection; request starts become ticks on the bar. Only the
+ * newest maxRows connections get a bar; the page says when rows are left out.
+ */
 export const buildTimeline = (view: ConnectionView, maxRows = MAX_TIMELINE_ROWS): TimelineRow[] => {
   const span = Math.max(1, view.now - view.windowStart);
   const position = (t: number) => Math.min(1, Math.max(0, (t - view.windowStart) / span));

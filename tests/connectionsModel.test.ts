@@ -222,6 +222,14 @@ describe('connections model', () => {
     expect(row.tone).toBe('open');
   });
 
+  test('timeline keeps the newest connections when capped', () => {
+    const view = buildConnectionView(snapshot, '15m', ALL_PROVIDERS);
+    expect(view.connections.length).toBeGreaterThan(1);
+    const rows = buildTimeline(view, 1);
+    expect(rows).toHaveLength(1);
+    expect(rows[0].conn.id).toBe(view.connections[view.connections.length - 1].id);
+  });
+
   test('close tones', () => {
     expect(closeTone('server_idle')).toBe('ok');
     expect(closeTone('proxy_per_request')).toBe('ok');

@@ -402,6 +402,11 @@
   margin-top: 2px;
 }
 
+// Short values keep to one line; long names wrap at natural points (Breakable).
+.nowrap {
+  white-space: nowrap;
+}
+
 .live {
   color: var(--viz-success);
 }
